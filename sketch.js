@@ -186,7 +186,9 @@ function playerJoined(dataConnection) {
   }
   
   dataConnections.push(dataConnection);
-  dataConnection.on('data', clientMessageReceive);
+  dataConnection.on('open', function() {
+    dataConnection.on('data', clientMessageReceive);
+  });
   dataConnection.on('close', function() {
     console.log("Connection closed");
     playerLeft(dataConnection);
