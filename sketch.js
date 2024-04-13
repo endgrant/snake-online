@@ -164,6 +164,7 @@ function startGame() {
 
 // Quit the game
 function quitGame() {
+  console.log("Quitting");
   for (let i = 0; i < dataConnections.length; i++) {
     dataConnections[i].close();
   }
@@ -178,17 +179,20 @@ function quitGame() {
 
 // Player connected to the lobby
 function playerJoined(dataConnection) {
-  console.log("join");
   if (dataConnections.length >= maxPlayers-1 || gameRunning == true) {
+    console.log("Cannot join now");
     dataConnection.close();
+    return;
   }
   
   dataConnections.push(dataConnection);
   dataConnection.on('data', clientMessageReceive);
   dataConnection.on('close', function() {
+    console.log("Connection closed");
     playerLeft(dataConnection);
   });
-  dataConnection.on('error', function() {
+  dataConnection.on('error', function(err) {
+    console.log("Client error " + err.type);
     playerLeft(dataConnection);
   });
   
