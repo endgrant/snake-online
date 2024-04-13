@@ -38,7 +38,9 @@ class Snake {
   // Moves the snake forward one space
   march() {
     // Update direction
-    this.direction = this.queuedDirection;
+    if (abs(this.direction.angleBetween(this.queuedDirection)) <= PI/1.9) {
+      this.direction = this.queuedDirection;
+    }    
     
     let frontPosition = this.cells[0].position.copy().add(this.direction);
     let collectedApple = false;
@@ -49,6 +51,11 @@ class Snake {
       for (let j = 0; j < cells.length; j++) {
         if (frontPosition.equals(cells[j].position)) {
           // Space occupied by a snake
+          this.die();
+          return;
+        } else if (frontPosition.x > boardSize - 1 || frontPosition.x < 0 ||
+                   frontPosition.y > boardSize - 1 || frontPosition.y < 0) {
+          // Space is outside board borders
           this.die();
           return;
         }

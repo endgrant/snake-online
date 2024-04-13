@@ -1,8 +1,9 @@
-const boardSize = 40;
+const boardSize = 60;
+const spawnMargin = 6;
 const cellSize = 16;
-const roundness = 3;
+const roundness = 8;
 
-const maxApples = 16;
+const maxApples = 24;
 let snakes = [];
 let apples = [];
 let snake;
@@ -34,6 +35,10 @@ const startButtonE = document.getElementById("startButton");
 
 // Called when the program starts
 function setup() {
+  if (boardSize < spawnMargin * 2 + 1) {
+    console.log("Board size is too small relative to the spawn margin!");
+    return;
+  }
   createCanvas(boardSize * cellSize, boardSize * cellSize);
 }
 
@@ -101,27 +106,29 @@ function keyPressed() {
     } else {
       connection.send({"id":peer.id, "dir":{"x":-1, "y":0}})
     }
+    return false;
   } else if (keyCode === RIGHT_ARROW) {
     if (isServer) {
       snake.queuedDirection = createVector(1,0);
     } else {
       connection.send({"id":peer.id, "dir":{"x":1, "y":0}})
     }
+    return false;
   } else if (keyCode === UP_ARROW) {
     if (isServer) {
       snake.queuedDirection = createVector(0,-1);
     } else {
       connection.send({"id":peer.id, "dir":{"x":0, "y":-1}})
     }
+    return false;
   } else if (keyCode === DOWN_ARROW) {
     if (isServer) {
       snake.queuedDirection = createVector(0,1);
     } else {
       connection.send({"id":peer.id, "dir":{"x":0, "y":1}})
     }
+    return false;
   }
-  
-  return false;
 }
 
 
@@ -147,11 +154,19 @@ function appleCollected(apple) {
 
 // Host starts the game
 function startGame() {
-  snake = new Snake(peer.id, createVector(boardSize/8+4, boardSize/2));
+  let spawnAngle = 2*PI/(dataConnections.length + 1);
+  let spawnRadius = (boardSize - spawnMargin * 2) / 2;
+  let halfBoardVector = createVector(boardSize/2, boardSize/2);
+
+  snake = new Snake(peer.id, createVector(spawnRadius).add(halfBoardVector));
   snakes.push(snake);
   
-  for (let i = 0; i < dataConnections.length; i++) {
-    snakes.push(new Snake(dataConnections[i].peer, createVector(boardSize*(i+2)/8+4)));
+  for (let i = 1; i < dataConnections.length + 1; i++) {
+    let vector = createVector(spawnRadius, 0)
+      .setHeading(spawnAngle * i)
+      .add(halfBoardVector);
+    vector.set(round(vector.x), round(vector.y));
+    snakes.push(new Snake(dataConnections[i - 1].peer, vector));
   }
   
   for (let i = 0; i < maxApples; i++) {
@@ -164,7 +179,6 @@ function startGame() {
 
 // Quit the game
 function quitGame() {
-  console.log("Quitting");
   for (let i = 0; i < dataConnections.length; i++) {
     dataConnections[i].close();
   }
@@ -178,27 +192,22 @@ function quitGame() {
 
 
 // Player connected to the lobby
-function playerJoined(dataConnection) {
-  if (dataConnections.length >= maxPlayers-1 || gameRunning == true) {
-    console.log("Cannot join now");
-    dataConnection.close();
-    return;
-  }
-  
+function playerJoined(dataConnection) {  
   dataConnection.on('open', function() {
+    if (dataConnections.length >= maxPlayers-1 || gameRunning == true) {
+      dataConnection.close();
+      return;
+    }
     dataConnections.push(dataConnection);
+    playerInfoE.innerText = "Player Count: " + str(dataConnections.length+1);
     dataConnection.on('data', clientMessageReceive);
   });
   dataConnection.on('close', function() {
-    console.log("Connection closed");
     playerLeft(dataConnection);
   });
   dataConnection.on('error', function(err) {
-    console.log("Client error " + err.type);
     playerLeft(dataConnection);
   });
-  
-  playerInfoE.innerText = "Player Count: " + str(dataConnections.length+1);
 }
 
 
