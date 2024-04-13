@@ -1,14 +1,14 @@
 const boardSize = 60;
-const spawnMargin = 6;
-const cellSize = 16;
-const roundness = 8;
+const spawnMargin = 8;
+const cellSize = 10;
+const roundness = 4;
 
 const maxApples = 24;
 let snakes = [];
 let apples = [];
 let snake;
 
-const tickMillis = 500;
+const tickMillis = 400;
 let lastTick = 0;
 
 const maxPlayers = 8;
