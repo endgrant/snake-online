@@ -185,8 +185,8 @@ function playerJoined(dataConnection) {
     return;
   }
   
-  dataConnections.push(dataConnection);
   dataConnection.on('open', function() {
+    dataConnections.push(dataConnection);
     dataConnection.on('data', clientMessageReceive);
   });
   dataConnection.on('close', function() {
