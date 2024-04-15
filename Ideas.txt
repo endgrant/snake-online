@@ -1,0 +1,6 @@
+Prohibit "starting" while a game is already going
+Make the game end when all other snakes are dead. Make sure to account for singleplayer vs multiplayer sessions.
+Add new types of pick-ups
+Change color of the head of snakes to make it stand out from the rest of the body
+Make other snakes appear as a different color from the local player
+Implement activated abilities
